@@ -80,10 +80,13 @@ Open `~/.openclaw/openclaw.json` and add the `env` block:
 }
 ```
 
-Also add the skill entry under `skills`:
+Also make sure your `openclaw.json` has the `tools` profile set to `coding` and the skill entry:
 
 ```json
 {
+  "tools": {
+    "profile": "coding"
+  },
   "skills": {
     "entries": {
       "testdino": {
@@ -93,6 +96,8 @@ Also add the skill entry under `skills`:
   }
 }
 ```
+
+> The `coding` tools profile is required — it enables the `exec` tool that the bot uses to call mcporter.
 
 ---
 
@@ -118,7 +123,7 @@ clawhub install testdino
 
 ### Step 6: Add TestDino to your TOOLS.md
 
-Open `~/.openclaw/workspace/TOOLS.md` and add this section at the bottom:
+Create or open `~/.openclaw/workspace/TOOLS.md` and add this section at the bottom:
 
 ```markdown
 ## TestDino — Playwright CI Intelligence
@@ -155,6 +160,8 @@ Then ask your bot in Slack:
 ```
 Check my TestDino connection
 ```
+
+**First-time exec approval:** On the first run, OpenClaw will pause and ask you to approve `mcporter` as an allowed exec command. Approve it — this only happens once. After that, all TestDino commands run automatically without prompting.
 
 You should see your account name and available projects.
 
@@ -274,8 +281,13 @@ See the [`examples/`](./examples/) folder for more cron templates.
 
 **Bot gives generic responses instead of TestDino data**
 - Make sure you completed Step 6 (adding TestDino to `TOOLS.md`) — this is the most commonly missed step.
+- Make sure `tools.profile` is set to `coding` in `openclaw.json` — without it the `exec` tool is unavailable.
 - Restart the gateway: `openclaw gateway --force`
 - Make sure `SKILL.md` is in `~/.openclaw/workspace/skills/testdino/SKILL.md`
+
+**Bot asks for permission every time it runs mcporter**
+- On the first run, approve `mcporter` in the exec prompt. It should not ask again after that.
+- If it keeps asking, check your `exec-approvals.json` at `~/.openclaw/exec-approvals.json` — mcporter should appear in the allowlist.
 
 **Config invalid / unrecognized key errors on gateway start**
 - Do not add an `mcp` top-level key to `openclaw.json` — OpenClaw does not support it

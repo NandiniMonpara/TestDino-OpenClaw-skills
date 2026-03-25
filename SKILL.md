@@ -36,9 +36,13 @@ exec: mcporter call testdino.list_testruns projectId=X limit=10
 ```
 
 **Why is [test name] failing? / Debug [test]:**
+
+If the user did not provide a test name, ask: "Which test case name would you like to debug?" and wait for their answer before running anything.
+
+Once you have the real test name:
 ```
 exec: mcporter call testdino.health
-exec: mcporter call testdino.debug_testcase projectId=X testcase_name="test name"
+exec: mcporter call testdino.debug_testcase projectId=X testcase_name="EXACT TEST NAME FROM USER"
 ```
 
 **Show flaky tests:**
@@ -63,7 +67,7 @@ exec: mcporter call testdino.get_run_details projectId=X counter=N
 **Show timeout failures:**
 ```
 exec: mcporter call testdino.health
-exec: mcporter call testdino.list_testcase projectId=X by_error_category=timeout_issues
+exec: mcporter call testdino.list_testcase projectId=X by_error_category=timeout_issues by_time_interval=1d
 ```
 
 **List manual test cases:**

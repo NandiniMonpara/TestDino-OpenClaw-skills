@@ -21,7 +21,7 @@ Paste this into your `openclaw.json` under the `crons` key:
     {
       "name": "testdino-morning-digest",
       "schedule": "0 9 * * 1-5",
-      "prompt": "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest with these sections: (1) Run summary — how many runs, overall pass rate; (2) Failures — list failed test names and error categories; (3) Flaky tests — count and names; (4) Recoveries — any tests that passed today after failing yesterday. End with a one-line health status. Keep it short."
+      "prompt": "Run: mcporter call testdino.health — get the projectId. Then run: mcporter call testdino.list_testruns projectId=X by_time_interval=1d. For the most recent run, run: mcporter call testdino.get_run_details projectId=X counter=N. Then run: mcporter call testdino.list_testcase projectId=X by_status=failed by_time_interval=1d and mcporter call testdino.list_testcase projectId=X by_status=flaky by_time_interval=1d. Format as a morning digest: (1) Run summary — total runs, pass rate; (2) Failures — test names and error categories; (3) Flaky tests — count and names; (4) One-line health status. Keep it short."
     }
   ]
 }
@@ -49,7 +49,7 @@ Change the schedule to match your timezone or preference:
     {
       "name": "testdino-morning-digest",
       "schedule": "0 9 * * 1-5",
-      "prompt": "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest with these sections: (1) Run summary — how many runs, overall pass rate; (2) Failures — list failed test names and error categories; (3) Flaky tests — count and names; (4) Recoveries — any tests that passed today after failing yesterday. End with a one-line health status. Keep it short."
+      "prompt": "Run: mcporter call testdino.health — get the projectId. Then run: mcporter call testdino.list_testruns projectId=X by_time_interval=1d. For the most recent run, run: mcporter call testdino.get_run_details projectId=X counter=N. Then run: mcporter call testdino.list_testcase projectId=X by_status=failed by_time_interval=1d and mcporter call testdino.list_testcase projectId=X by_status=flaky by_time_interval=1d. Format as a morning digest: (1) Run summary — total runs, pass rate; (2) Failures — test names and error categories; (3) Flaky tests — count and names; (4) One-line health status. Keep it short."
     }
   ]
 }

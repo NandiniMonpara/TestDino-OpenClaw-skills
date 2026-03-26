@@ -214,15 +214,94 @@ Show me critical priority test cases
 
 ## Automated Alerts and Digests (Cron)
 
-### Morning CI Digest — daily at 9am weekdays
+> **Note:** Crons only fire while the OpenClaw gateway is running. For reliable delivery, keep the gateway running as a background process or service. If you close the gateway, no cron messages will be sent until it is restarted.
 
-Ask OpenClaw to set up a cron:
+There are three ways to set up cron jobs. Choose whichever fits your workflow.
 
+---
+
+### Method 1 — CLI (`openclaw cron add`)
+
+The recommended approach. Run these commands while the gateway is running.
+
+> **Before running — two things to prepare:**
+>
+> **1. Your gateway token** — find it in `~/.openclaw/openclaw.json` under `gateway.auth.token`. Pass it via `--token`.
+>
+> **2. Your delivery destination** — replace `YOUR_CHANNEL` and `YOUR_DESTINATION` based on your configured channel:
+>
+> | Channel | `--channel` | `--to` format | How to find your ID |
+> |---|---|---|---|
+> | Slack | `slack` | `channel:CXXXXXXXXX` | Right-click channel in Slack → View channel details → Copy channel ID |
+> | Slack DM | `slack` | `UXXXXXXXXX` | Slack profile → More → Copy member ID |
+> | Telegram | `telegram` | your Telegram chat ID | Message @userinfobot on Telegram |
+> | Discord | `discord` | your Discord channel ID | Right-click channel in Discord → Copy Channel ID |
+> | WhatsApp | `whatsapp` | phone in E.164 format | e.g. `+15551234567` |
+
+**Morning CI Digest:**
+```bash
+openclaw cron add --name "testdino-morning-digest" --cron "0 9 * * 1-5" --session isolated --announce --channel YOUR_CHANNEL --to "YOUR_DESTINATION" --token "your-gateway-token" --message "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest: total runs, pass rate, failures (names + error categories), flaky test count. Keep it short and scannable."
 ```
-Set up a daily morning digest for my TestDino CI at 9am on weekdays
+
+**Failure Alerts:**
+```bash
+openclaw cron add --name "testdino-failure-watch" --every 15m --session isolated --announce --channel YOUR_CHANNEL --to "YOUR_DESTINATION" --token "your-gateway-token" --message "Call the TestDino health tool to get my project ID. Then call list_testcase with by_status=failed and by_time_interval=1h. Look only at test cases that appear recent (within the last 15 minutes based on timestamps if available). If there are any failed tests, send an alert listing: the test names, the branch they are on, and the error category. If there are zero failures, do not send any message — stay completely silent."
 ```
 
-Or paste this config directly into `openclaw.json`:
+Verify they were created:
+```bash
+openclaw cron list --token "your-gateway-token"
+```
+
+---
+
+### Method 2 — Direct JSON (`~/.openclaw/cron/jobs.json`)
+
+Write directly to the cron store. Create or edit `~/.openclaw/cron/jobs.json`:
+
+```json
+{
+  "jobs": [
+    {
+      "id": "testdino-morning-digest-01",
+      "name": "testdino-morning-digest",
+      "enabled": true,
+      "schedule": { "kind": "cron", "expr": "0 9 * * 1-5" },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest: total runs, pass rate, failures (names + error categories), flaky test count. Keep it short and scannable."
+      },
+      "delivery": { "mode": "announce", "channel": "YOUR_CHANNEL", "to": "YOUR_DESTINATION" }
+    },
+    {
+      "id": "testdino-failure-watch-01",
+      "name": "testdino-failure-watch",
+      "enabled": true,
+      "schedule": { "kind": "every", "everyMs": 900000 },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Call the TestDino health tool to get my project ID. Then call list_testcase with by_status=failed and by_time_interval=1h. Look only at test cases that appear recent (within the last 15 minutes based on timestamps if available). If there are any failed tests, send an alert listing: the test names, the branch they are on, and the error category. If there are zero failures, do not send any message — stay completely silent."
+      },
+      "delivery": { "mode": "announce", "channel": "YOUR_CHANNEL", "to": "YOUR_DESTINATION" }
+    }
+  ]
+}
+```
+
+Then restart the gateway to pick up the changes:
+```bash
+openclaw gateway --force
+```
+
+---
+
+### Method 3 — `openclaw.json` (future support)
+
+> **Version note:** Support for `crons` in `openclaw.json` depends on your OpenClaw version. Not available in **2026.3.13** — if your gateway reports `Unrecognized key: "crons"` on startup, use Method 1 or Method 2 instead.
 
 ```json
 {
@@ -230,25 +309,20 @@ Or paste this config directly into `openclaw.json`:
     {
       "name": "testdino-morning-digest",
       "schedule": "0 9 * * 1-5",
-      "prompt": "Run: mcporter call testdino.health — get the projectId. Then run: mcporter call testdino.list_testruns projectId=X by_time_interval=1d. Send a morning digest: total runs, new failures, flaky test count, top failing tests. Keep it short and scannable."
-    }
-  ]
-}
-```
-
-### Failure Alerts — every 15 minutes
-
-```json
-{
-  "crons": [
+      "sessionTarget": "isolated",
+      "prompt": "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest: total runs, pass rate, failures (names + error categories), flaky test count. Keep it short and scannable."
+    },
     {
       "name": "testdino-failure-watch",
       "schedule": "*/15 * * * *",
-      "prompt": "Run: mcporter call testdino.health — get the projectId. Then run: mcporter call testdino.list_testcase projectId=X by_status=failed by_time_interval=1d. If there are failures, send an alert with test names, branches, and error categories. If no failures, stay quiet."
+      "sessionTarget": "isolated",
+      "prompt": "Call the TestDino health tool to get my project ID. Then call list_testcase with by_status=failed and by_time_interval=1h. Look only at test cases that appear recent (within the last 15 minutes based on timestamps if available). If there are any failed tests, send an alert listing: the test names, the branch they are on, and the error category. If there are zero failures, do not send any message — stay completely silent."
     }
   ]
 }
 ```
+
+---
 
 See the [`examples/`](./examples/) folder for more cron templates.
 

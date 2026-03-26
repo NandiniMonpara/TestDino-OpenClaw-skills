@@ -11,9 +11,41 @@ notification channel (Telegram, Slack, Discord, etc.).
 - Top failing tests by name and error category
 - Any tests that recovered (passed after previously failing)
 
-## Cron Config
+---
 
-Paste this into your `openclaw.json` under the `crons` key:
+## Setup
+
+### Method 1 — CLI (recommended)
+
+Run this while the gateway is running. Replace `YOUR_CHANNEL`, `YOUR_DESTINATION`, and `your-gateway-token` with your values — see the [main README](../README.md#method-1--cli-openclaw-cron-add) for how to find them.
+
+```bash
+openclaw cron add --name "testdino-morning-digest" --cron "0 9 * * 1-5" --session isolated --announce --channel YOUR_CHANNEL --to "YOUR_DESTINATION" --token "your-gateway-token" --message "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest: (1) Run summary — total runs, pass rate; (2) Failures — test names and error categories; (3) Flaky tests — count and names; (4) One-line health status. Keep it short."
+```
+
+### Method 2 — Direct JSON (`~/.openclaw/cron/jobs.json`)
+
+Add this entry to your `~/.openclaw/cron/jobs.json` then restart the gateway:
+
+```json
+{
+  "id": "testdino-morning-digest-01",
+  "name": "testdino-morning-digest",
+  "enabled": true,
+  "schedule": { "kind": "cron", "expr": "0 9 * * 1-5" },
+  "sessionTarget": "isolated",
+  "wakeMode": "now",
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest: (1) Run summary — total runs, pass rate; (2) Failures — test names and error categories; (3) Flaky tests — count and names; (4) One-line health status. Keep it short."
+  },
+  "delivery": { "mode": "announce", "channel": "YOUR_CHANNEL", "to": "YOUR_DESTINATION" }
+}
+```
+
+### Method 3 — `openclaw.json`
+
+> **Version note:** Support for `crons` in `openclaw.json` depends on your OpenClaw version. Not available in **2026.3.13** — if your gateway reports `Unrecognized key: "crons"` on startup, use Method 1 or Method 2 instead.
 
 ```json
 {
@@ -21,39 +53,27 @@ Paste this into your `openclaw.json` under the `crons` key:
     {
       "name": "testdino-morning-digest",
       "schedule": "0 9 * * 1-5",
-      "prompt": "Run: mcporter call testdino.health — get the projectId. Then run: mcporter call testdino.list_testruns projectId=X by_time_interval=1d. For the most recent run, run: mcporter call testdino.get_run_details projectId=X counter=N. Then run: mcporter call testdino.list_testcase projectId=X by_status=failed by_time_interval=1d and mcporter call testdino.list_testcase projectId=X by_status=flaky by_time_interval=1d. Format as a morning digest: (1) Run summary — total runs, pass rate; (2) Failures — test names and error categories; (3) Flaky tests — count and names; (4) One-line health status. Keep it short."
+      "sessionTarget": "isolated",
+      "prompt": "Call the TestDino health tool to get my project ID. Then call list_testruns with by_time_interval=1d to get all runs from the last 24 hours. For the most recent run, call get_run_details to get full stats. Then call list_testcase with by_status=failed and by_time_interval=1d to get failed tests, and list_testcase with by_status=flaky and by_time_interval=1d to get flaky tests. Format as a morning digest: (1) Run summary — total runs, pass rate; (2) Failures — test names and error categories; (3) Flaky tests — count and names; (4) One-line health status. Keep it short."
     }
   ]
 }
 ```
 
+---
+
 ## Schedule Options
 
-Change the schedule to match your timezone or preference:
+Change the `--cron` value to match your timezone or preference:
 
-| Schedule | Meaning |
+| `--cron` value | Meaning |
 |---|---|
 | `0 9 * * 1-5` | 9am weekdays |
 | `0 8 * * 1-5` | 8am weekdays |
 | `0 9 * * *` | 9am every day including weekends |
 | `0 6 * * 1-5` | 6am weekdays (early alert) |
 
-## Full openclaw.json Example
-
-```json
-{
-  "env": {
-    "TESTDINO_PAT": "your-personal-access-token"
-  },
-  "crons": [
-    {
-      "name": "testdino-morning-digest",
-      "schedule": "0 9 * * 1-5",
-      "prompt": "Run: mcporter call testdino.health — get the projectId. Then run: mcporter call testdino.list_testruns projectId=X by_time_interval=1d. For the most recent run, run: mcporter call testdino.get_run_details projectId=X counter=N. Then run: mcporter call testdino.list_testcase projectId=X by_status=failed by_time_interval=1d and mcporter call testdino.list_testcase projectId=X by_status=flaky by_time_interval=1d. Format as a morning digest: (1) Run summary — total runs, pass rate; (2) Failures — test names and error categories; (3) Flaky tests — count and names; (4) One-line health status. Keep it short."
-    }
-  ]
-}
-```
+---
 
 ## Example Output
 

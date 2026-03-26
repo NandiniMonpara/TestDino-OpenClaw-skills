@@ -1,7 +1,8 @@
 ---
 name: testdino
 description: Connect OpenClaw to TestDino for real-time Playwright CI intelligence. Ask about test failures, flaky tests, run history, and CI health in plain English.
-metadata: {"openclaw": {"emoji": "🦕", "primaryEnv": "TESTDINO_PAT", "requires": {"bins": ["mcporter", "testdino-mcp"], "env": ["TESTDINO_PAT"]}}}
+homepage: https://github.com/testdino-hq/TestDino-OpenClaw-skills
+metadata: {"openclaw": {"primaryEnv": "TESTDINO_PAT", "requires": {"bins": ["mcporter", "testdino-mcp"], "env": ["TESTDINO_PAT"]}, "install": [{"type": "node", "pkg": "mcporter", "bin": "mcporter"}, {"type": "node", "pkg": "testdino-mcp", "bin": "testdino-mcp"}]}}
 ---
 
 # TestDino — Playwright CI Intelligence

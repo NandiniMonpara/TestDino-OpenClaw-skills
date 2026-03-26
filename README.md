@@ -155,7 +155,7 @@ Never use invented commands like `testdino check-connection` or `testdino.get_ci
 openclaw gateway --force
 ```
 
-Then ask your bot in Slack:
+Then ask your bot:
 
 ```
 Check my TestDino connection

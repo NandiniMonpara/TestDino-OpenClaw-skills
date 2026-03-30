@@ -136,9 +136,9 @@ For TestDino queries, always use the `exec` tool with `mcporter`. Always run `he
 | What broke today | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_testcase projectId=X by_status=failed by_time_interval=1d` |
 | Recent test runs | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_testruns projectId=X limit=10` |
 | Why is [test] failing | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.debug_testcase projectId=X testcase_name="name"` |
-| Flaky tests | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_testcase projectId=X by_status=flaky by_time_interval=weekly` |
+| Flaky tests | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_testcase projectId=X by_status=flaky by_time_interval=3d` |
 | Safe to merge branch Y? | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_testcase projectId=X by_branch=Y by_status=failed` |
-| Weekly CI summary | `exec: mcporter call testdino.health` → `exec: mcporter call testdino.list_testruns projectId=X by_time_interval=weekly` → `exec: mcporter call testdino.get_run_details projectId=X counter=N` |
+| Weekly CI summary | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_testruns projectId=X by_time_interval=YYYY-MM-DD,YYYY-MM-DD` (use date range: 7 days ago to today — avoid the `weekly` keyword which has an exclusive boundary bug) |
 | Timeout failures | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_testcase projectId=X by_error_category=timeout_issues` |
 | Manual test cases | `exec: mcporter call testdino.health` then `exec: mcporter call testdino.list_manual_test_cases projectId=X` |
 

@@ -113,24 +113,20 @@ exec: mcporter call testdino.health
 exec: mcporter call testdino.list_testcase projectId=X by_error_category=timeout_issues by_time_interval=TIME limit=10
 ```
 
-**Total count of manual test cases / how many test cases?:**
+**List manual test cases / total count / show [priority] test cases / show [type] test cases:**
 
-When the user asks for the **count or total number** of manual test cases (not listing them), use a high limit to get the real total:
+⚠️ Use `list_manual_test_cases` — NOT `list_testcase`. These are completely different tools.
+
 ```
 exec: mcporter call testdino.health
 exec: mcporter call testdino.list_manual_test_cases projectId=X limit=1000
 ```
-Read the `count` field from the response — that is the total. Reply with just the number, e.g. "SpecMetrics has **150** manual test cases."
 
-**List manual test cases / show [priority] test cases / show [type] test cases:**
-
-⚠️ Use `list_manual_test_cases` — NOT `list_testcase`. These are completely different tools.
-`list_manual_test_cases` only needs `projectId`. No time interval or test run filter required.
-
+⚠️ **IMPORTANT — verify the count:** After the response comes back, check the `count` field. If `count` is exactly 10, the API used its default limit and you do NOT have all results. You MUST retry with `limit=1000`:
 ```
-exec: mcporter call testdino.health
-exec: mcporter call testdino.list_manual_test_cases projectId=X limit=20
+exec: mcporter call testdino.list_manual_test_cases projectId=X limit=1000
 ```
+Only trust the `count` from a response where you explicitly passed `limit=1000`.
 
 Add filters if user specifies:
 - `priority=critical` / `priority=high` / `priority=medium` / `priority=low`
@@ -138,10 +134,11 @@ Add filters if user specifies:
 - `status=active` / `status=draft`
 
 Examples:
-- "critical priority test cases" → `list_manual_test_cases projectId=X priority=critical limit=20`
-- "smoke test cases" → `list_manual_test_cases projectId=X type=smoke limit=20`
+- "critical priority test cases" → `list_manual_test_cases projectId=X priority=critical limit=1000`
+- "smoke test cases" → `list_manual_test_cases projectId=X type=smoke limit=1000`
 
-Show only caseId + title per test case. Show the first 15, then ALWAYS end with:
+**If user asks for total count:** Read the `count` field from the response and reply with just the number.
+**If user asks to list/show:** Show only caseId + title. Show the first 15, then ALWAYS end with:
 _"There are more test cases available. Let me know if you'd like to see more!"_
 
 **List test suites / show all suites:**

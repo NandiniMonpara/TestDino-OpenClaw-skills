@@ -113,6 +113,15 @@ exec: mcporter call testdino.health
 exec: mcporter call testdino.list_testcase projectId=X by_error_category=timeout_issues by_time_interval=TIME limit=10
 ```
 
+**Total count of manual test cases / how many test cases?:**
+
+When the user asks for the **count or total number** of manual test cases (not listing them), use a high limit to get the real total:
+```
+exec: mcporter call testdino.health
+exec: mcporter call testdino.list_manual_test_cases projectId=X limit=1000
+```
+Read the `count` field from the response — that is the total. Reply with just the number, e.g. "SpecMetrics has **150** manual test cases."
+
 **List manual test cases / show [priority] test cases / show [type] test cases:**
 
 ⚠️ Use `list_manual_test_cases` — NOT `list_testcase`. These are completely different tools.
@@ -132,8 +141,19 @@ Examples:
 - "critical priority test cases" → `list_manual_test_cases projectId=X priority=critical limit=20`
 - "smoke test cases" → `list_manual_test_cases projectId=X type=smoke limit=20`
 
-Show only caseId + title per test case. ALWAYS end your reply with this exact line — no exceptions:
+Show only caseId + title per test case. Show the first 15, then ALWAYS end with:
 _"There are more test cases available. Let me know if you'd like to see more!"_
+
+**List test suites / show all suites:**
+```
+exec: mcporter call testdino.health
+exec: mcporter call testdino.list_manual_test_suites projectId=X
+```
+
+Show only the `name` field from each suite. Show the first 15 suites, then end with:
+_"There are more suites available. Let me know if you'd like to see more!"_
+
+NEVER show: suite IDs, metadata, hierarchy, timestamps, descriptions (they are empty), or tags (they don't exist in the response). NEVER invent test case counts or test case names — `list_manual_test_suites` does NOT return test cases.
 
 **List spec files / show spec files / all spec files in project:**
 ```
@@ -172,6 +192,8 @@ Always normalize any date format the user gives to `YYYY-MM-DD`. For a specific 
 ---
 
 ## Response format
+
+**CRITICAL: NEVER invent or fabricate data.** Only show fields that exist in the actual API response. If a field is missing or empty, do not guess or fill it in. If the response is too large to process fully, show what you can and say "there are more — ask if you'd like to see more." Never make up descriptions, tags, test counts, or test case names that are not in the response.
 
 **Keep responses short. Always use `totalCount` from the response for the count.**
 
